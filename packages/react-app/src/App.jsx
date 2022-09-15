@@ -1,4 +1,5 @@
-import { Button, Col, Menu, Row } from "antd";
+import { Button, Col, Menu, Row, Spin } from "antd";
+import useTokenPagination from "token-pagination-hooks";
 import "antd/dist/antd.css";
 import {
   useBalance,
@@ -31,6 +32,8 @@ import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
 import { Home, ExampleUI, Hints, Subgraph } from "./views";
 import { useStaticJsonRPC } from "./hooks";
+import { NFTsMinted } from "./components/NFTsMinted";
+import { fetchCLBNFTs, fetchELBNFTs } from "./utils";
 
 const { ethers } = require("ethers");
 /*
@@ -74,6 +77,31 @@ function App(props) {
   // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
   // reference './constants.js' for other networks
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
+  const [clbData, setClbData] = useState(null);
+  const [elbData, setElbData] = useState(null);
+
+  const [elbLoading, setElbLoading] = useState(false);
+  const [clbLoading, setClbLoading] = useState(false);
+
+  const {
+    updateToken: updateELBNextPageToken,
+    currentToken: currentELBPageToken,
+    changePageNumber: changeELBPageNumber,
+    pageNumber: elbPageNumber,
+  } = useTokenPagination({
+    defaultPageNumber: 1,
+    defaultPageSize: 6,
+  });
+
+  const {
+    updateToken: updateCLBNextPageToken,
+    currentToken: currentCLBPageToken,
+    changePageNumber: changeCLBPageNumber,
+    pageNumber: clbPageNumber,
+  } = useTokenPagination({
+    defaultPageNumber: 1,
+    defaultPageSize: 6,
+  });
 
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState();
@@ -244,6 +272,46 @@ function App(props) {
 
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
+  const usersELBNFTsElement = elbData && (
+    <NFTsMinted data={elbData} setPageNumber={changeELBPageNumber} pageNumber={elbPageNumber} loading={elbLoading} />
+  );
+
+  const usersCLBNFTsElement = clbData && (
+    <NFTsMinted data={clbData} setPageNumber={changeCLBPageNumber} pageNumber={clbPageNumber} loading={clbLoading} />
+  );
+
+  useEffect(() => {
+    if (address) {
+      (async () => {
+        setClbLoading(true);
+        console.log("currentCLBPageToken:", currentCLBPageToken);
+        let clbDataRes = await fetchCLBNFTs(address, currentCLBPageToken, 6);
+        console.log("pageKey", clbDataRes.pageKey);
+        updateCLBNextPageToken(clbDataRes.pageKey);
+        setClbData(clbDataRes);
+        console.log("called me");
+        console.log(`CLB DATA`, clbDataRes);
+        setClbLoading(false);
+      })();
+    }
+  }, [address, currentCLBPageToken, updateCLBNextPageToken]);
+
+  useEffect(() => {
+    if (address) {
+      (async () => {
+        setElbLoading(true);
+        console.log("currentELBPageToken:", currentELBPageToken);
+        let elbDataRes = await fetchELBNFTs(address, currentELBPageToken, 6);
+        console.log("pageKey", elbDataRes.pageKey);
+        updateELBNextPageToken(elbDataRes.pageKey);
+        setElbData(elbDataRes);
+        console.log("called me");
+        console.log(`ELB DATA`, elbDataRes);
+        setElbLoading(false);
+      })();
+    }
+  }, [address, currentELBPageToken, updateELBNextPageToken]);
+
   return (
     <div className="App">
       {/* ✏️ Edit the header and change the title to your project name */}
@@ -332,6 +400,7 @@ function App(props) {
                   value: price.mul(2),
                 }),
               );
+              changeCLBPageNumber(1);
               console.log("result", result);
             }}
           >
@@ -347,6 +416,7 @@ function App(props) {
                   value: price.mul(3),
                 }),
               );
+              changeCLBPageNumber(1);
               console.log("result", result);
             }}
           >
@@ -362,6 +432,7 @@ function App(props) {
                   value: price.mul(4),
                 }),
               );
+              changeCLBPageNumber(1);
               console.log("result", result);
             }}
           >
@@ -377,6 +448,7 @@ function App(props) {
                   value: price.mul(6),
                 }),
               );
+              changeCLBPageNumber(1);
               console.log("result", result);
             }}
           >
@@ -392,11 +464,18 @@ function App(props) {
                   value: price.mul(11),
                 }),
               );
+              changeCLBPageNumber(1);
               console.log("result", result);
             }}
           >
             Mint 10
           </Button>
+          {usersCLBNFTsElement}
+          {!clbData && (
+            <div style={{ marginTop: "4rem" }}>
+              <Spin size="large" />
+            </div>
+          )}
 
           <hr style={{ margin: 64 }} />
 
@@ -418,6 +497,7 @@ function App(props) {
                   value: price.mul(2),
                 }),
               );
+              changeELBPageNumber(1);
               console.log("result", result);
             }}
           >
@@ -433,6 +513,7 @@ function App(props) {
                   value: price.mul(3),
                 }),
               );
+              changeELBPageNumber(1);
               console.log("result", result);
             }}
           >
@@ -448,6 +529,7 @@ function App(props) {
                   value: price.mul(4),
                 }),
               );
+              changeELBPageNumber(1);
               console.log("result", result);
             }}
           >
@@ -463,6 +545,7 @@ function App(props) {
                   value: price.mul(6),
                 }),
               );
+              changeELBPageNumber(1);
               console.log("result", result);
             }}
           >
@@ -478,11 +561,18 @@ function App(props) {
                   value: price.mul(11),
                 }),
               );
+              changeELBPageNumber(1);
               console.log("result", result);
             }}
           >
             Mint 10
           </Button>
+          {usersELBNFTsElement}
+          {!elbData && (
+            <div style={{ marginTop: "4rem" }}>
+              <Spin size="large" />
+            </div>
+          )}
         </Route>
         <Route exact path="/debug">
           {/*
