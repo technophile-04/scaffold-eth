@@ -65,12 +65,11 @@ export default function useStaticJsonRPC(localUrl, urlArray, isMainnet) {
       // todo: show notification error about provider issues
       console.log(error);
     }
-  }, [localUrl, JSON.stringify(urlArray), isMainnet]);
+  }, [localUrl, urlArray, isMainnet]);
 
   useEffect(() => {
     handleProviders();
-    // eslint-disable-next-line
-  }, [localUrl, JSON.stringify(urlArray), isMainnet]);
+  }, [handleProviders]);
 
   return provider;
 }
