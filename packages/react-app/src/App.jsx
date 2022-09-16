@@ -1,4 +1,4 @@
-import { Button, Col, Menu, Row, Spin } from "antd";
+import { Button, Col, InputNumber, Menu, Row, Space, Spin, Tooltip, Typography } from "antd";
 import useTokenPagination from "token-pagination-hooks";
 import "antd/dist/antd.css";
 import {
@@ -33,7 +33,8 @@ import { Transactor, Web3ModalSetup } from "./helpers";
 import { Home, ExampleUI, Hints, Subgraph } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 import { NFTsMinted } from "./components/NFTsMinted";
-import { fetchCLBNFTs, fetchELBNFTs } from "./utils";
+import { fetchCLBNFTs, fetchELBNFTs, fetchMLBNFTs } from "./utils";
+import { InfoCircleOutlined } from "@ant-design/icons";
 
 const { ethers } = require("ethers");
 /*
@@ -59,9 +60,9 @@ const { ethers } = require("ethers");
 const initialNetwork = NETWORKS.optimism; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
-const DEBUG = true;
+const DEBUG = false;
 const NETWORKCHECK = true;
-const USE_BURNER_WALLET = true; // toggle burner wallet feature
+const USE_BURNER_WALLET = false; // toggle burner wallet feature
 const USE_NETWORK_SELECTOR = false;
 
 const web3Modal = Web3ModalSetup();
@@ -77,11 +78,17 @@ function App(props) {
   // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
   // reference './constants.js' for other networks
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
+
   const [clbData, setClbData] = useState(null);
   const [elbData, setElbData] = useState(null);
+  const [mlbData, setMlbData] = useState(null);
 
   const [elbLoading, setElbLoading] = useState(false);
   const [clbLoading, setClbLoading] = useState(false);
+  const [mlbLoading, setMlbLoading] = useState(false);
+
+  const [clbSelectedTokenId, setClbSelectedTokenId] = useState(1);
+  const [elbSelectedTokenId, setElbSelectedTokenId] = useState(1);
 
   const {
     updateToken: updateELBNextPageToken,
@@ -98,6 +105,16 @@ function App(props) {
     currentToken: currentCLBPageToken,
     changePageNumber: changeCLBPageNumber,
     pageNumber: clbPageNumber,
+  } = useTokenPagination({
+    defaultPageNumber: 1,
+    defaultPageSize: 6,
+  });
+
+  const {
+    updateToken: updateMLBNextPageToken,
+    currentToken: currentMLBPageToken,
+    changePageNumber: changeMLBPageNumber,
+    pageNumber: mlbPageNumber,
   } = useTokenPagination({
     defaultPageNumber: 1,
     defaultPageSize: 6,
@@ -184,19 +201,6 @@ function App(props) {
   // If you want to bring in the mainnet DAI contract it would look like:
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
 
-  // If you want to call a function on a new block
-  useOnBlock(mainnetProvider, () => {
-    console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
-  });
-
-  // Then read your DAI balance like:
-  const myMainnetDAIBalance = useContractReader(mainnetContracts, "DAI", "balanceOf", [
-    "0x34aA3F359A9D614239015126635CE7732c18fDF3",
-  ]);
-
-  // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts, "YourContract", "purpose");
-
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -226,7 +230,6 @@ function App(props) {
       console.log("💵 yourMainnetBalance", yourMainnetBalance ? ethers.utils.formatEther(yourMainnetBalance) : "...");
       console.log("📝 readContracts", readContracts);
       console.log("🌍 DAI contract on mainnet:", mainnetContracts);
-      console.log("💵 yourMainnetDAIBalance", myMainnetDAIBalance);
       console.log("🔐 writeContracts", writeContracts);
     }
   }, [
@@ -239,7 +242,6 @@ function App(props) {
     writeContracts,
     mainnetContracts,
     localChainId,
-    myMainnetDAIBalance,
   ]);
 
   const loadWeb3Modal = useCallback(async () => {
@@ -270,14 +272,16 @@ function App(props) {
     }
   }, [loadWeb3Modal]);
 
-  const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
-
   const usersELBNFTsElement = elbData && (
     <NFTsMinted data={elbData} setPageNumber={changeELBPageNumber} pageNumber={elbPageNumber} loading={elbLoading} />
   );
 
   const usersCLBNFTsElement = clbData && (
     <NFTsMinted data={clbData} setPageNumber={changeCLBPageNumber} pageNumber={clbPageNumber} loading={clbLoading} />
+  );
+
+  const usersMLBNFTsElement = clbData && (
+    <NFTsMinted data={mlbData} setPageNumber={changeMLBPageNumber} pageNumber={mlbPageNumber} loading={clbLoading} />
   );
 
   useEffect(() => {
@@ -289,6 +293,9 @@ function App(props) {
         console.log("pageKey", clbDataRes.pageKey);
         updateCLBNextPageToken(clbDataRes.pageKey);
         setClbData(clbDataRes);
+        if (clbDataRes[0]) {
+          setClbSelectedTokenId(clbDataRes[0].tokenId);
+        }
         console.log("called me");
         console.log(`CLB DATA`, clbDataRes);
         setClbLoading(false);
@@ -305,12 +312,33 @@ function App(props) {
         console.log("pageKey", elbDataRes.pageKey);
         updateELBNextPageToken(elbDataRes.pageKey);
         setElbData(elbDataRes);
+        if (elbDataRes[0]) {
+          setElbSelectedTokenId(elbDataRes[0].tokenId);
+        }
         console.log("called me");
         console.log(`ELB DATA`, elbDataRes);
         setElbLoading(false);
       })();
     }
   }, [address, currentELBPageToken, updateELBNextPageToken]);
+
+  useEffect(() => {
+    if (address) {
+      (async () => {
+        setMlbLoading(true);
+        console.log("currentMLBPageToken:", currentMLBPageToken);
+        let mlbDataRes = await fetchMLBNFTs(address, currentMLBPageToken, 6);
+        if (mlbDataRes) {
+          console.log("pageKey", mlbDataRes.pageKey);
+          updateMLBNextPageToken(mlbDataRes.pageKey);
+          setMlbData(mlbDataRes);
+          console.log("called me");
+          console.log(`MLB DATA`, mlbDataRes);
+        }
+        setMlbLoading(false);
+      })();
+    }
+  }, [address, currentMLBPageToken, updateMLBNextPageToken]);
 
   return (
     <div className="App">
@@ -382,98 +410,106 @@ function App(props) {
               at the same time!!!
             </h1>
 
+            <Space direction="vertical">
+              <h2 style={{ margin: "18px 32px 18px 32px" }}>
+                🐻‍❄️ X 🐻 Merge Bears
+                <Tooltip
+                  placement="topLeft"
+                  title="If you are getting 'Internal JSON-RPC error' make sure you have enough balance and passing in correct tokenID's also CL and EL bear must not have already been used to mint
+                  Merge Bear"
+                >
+                  <InfoCircleOutlined size={"small"} style={{ marginLeft: "1rem" }} />
+                </Tooltip>
+              </h2>
+              <h3>Select the token IDs</h3>
+              <Space align="center" size={60} style={{}}>
+                <Space direction="vertical">
+                  <h3>Consensus Layer Bears</h3>
+                  <InputNumber
+                    size="large"
+                    min={1}
+                    defaultValue={1}
+                    max={3675}
+                    value={clbSelectedTokenId}
+                    onChange={value => {
+                      setClbSelectedTokenId(value);
+                    }}
+                  />
+                </Space>
+                <Space direction="vertical">
+                  <h3>Execution Layer Bears</h3>
+                  <InputNumber
+                    size="large"
+                    min={1}
+                    defaultValue={1}
+                    max={3675}
+                    value={elbSelectedTokenId}
+                    onChange={value => {
+                      setElbSelectedTokenId(value);
+                    }}
+                  />
+                </Space>
+              </Space>
+              {userSigner ? (
+                <Button
+                  size="large"
+                  type={"primary"}
+                  onClick={async () => {
+                    const price = ethers.utils.parseEther("0.00042");
+                    const res = await tx(
+                      writeContracts.MB["mint(uint256,uint256)"](
+                        clbSelectedTokenId.toString(),
+                        elbSelectedTokenId.toString(),
+                        {
+                          value: price,
+                        },
+                      ),
+                    );
+
+                    setTimeout(function () {
+                      window.location.reload();
+                    }, 3000);
+
+                    changeMLBPageNumber(1);
+                  }}
+                  style={{ marginTop: "2rem" }}
+                >
+                  Mint Merge Bear
+                </Button>
+              ) : (
+                <Button type={"primary"} onClick={loadWeb3Modal} style={{ marginTop: "2rem" }}>
+                  CONNECT WALLET
+                </Button>
+              )}
+            </Space>
+            {usersMLBNFTsElement}
+            {userSigner ? (
+              !mlbData && (
+                <div style={{ marginTop: "4rem" }}>
+                  <Spin size="large" />
+                </div>
+              )
+            ) : (
+              <div>
+                <Typography.Title level={5}>Please Connect to wallet to view Owned NFts</Typography.Title>
+              </div>
+            )}
             <hr style={{ margin: 64 }} />
-
-            <h2 style={{ margin: 32 }}>🐻‍❄️ Consensus Layer Bears</h2>
-            <h3>
-              <a href="https://qx.app/collection/consensus-layer-bears" target="_blank" rel="noreferrer">
-                (view on quixotic)
-              </a>
-            </h3>
           </div>
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0xfb3999711d4f309F6B71504268F79b3fD578DA6F", 1, {
-                  value: price.mul(2),
-                }),
-              );
-              changeCLBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 1
-          </Button>
 
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0xfb3999711d4f309F6B71504268F79b3fD578DA6F", 2, {
-                  value: price.mul(3),
-                }),
-              );
-              changeCLBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 2
-          </Button>
-
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0xfb3999711d4f309F6B71504268F79b3fD578DA6F", 3, {
-                  value: price.mul(4),
-                }),
-              );
-              changeCLBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 3
-          </Button>
-
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0xfb3999711d4f309F6B71504268F79b3fD578DA6F", 5, {
-                  value: price.mul(6),
-                }),
-              );
-              changeCLBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 5
-          </Button>
-
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0xfb3999711d4f309F6B71504268F79b3fD578DA6F", 10, {
-                  value: price.mul(11),
-                }),
-              );
-              changeCLBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 10
-          </Button>
+          <div>
+            <h2 style={{ margin: 32 }}>🐻‍❄️ Consensus Layer Bears</h2>
+          </div>
           {usersCLBNFTsElement}
-          {!clbData && (
-            <div style={{ marginTop: "4rem" }}>
-              <Spin size="large" />
+          {userSigner ? (
+            !clbData && (
+              <div style={{ marginTop: "4rem" }}>
+                <Spin size="large" />
+              </div>
+            )
+          ) : (
+            <div>
+              <Typography.Title level={5}>Please Connect to wallet to view Owned NFts</Typography.Title>
             </div>
           )}
 
@@ -481,167 +517,19 @@ function App(props) {
 
           <div>
             <h2 style={{ margin: 32 }}>🐻 Execution Layer Bears</h2>
-            <h3>
-              <a href="https://qx.app/collection/execution-layer-bears" target="_blank" rel="noreferrer">
-                (view on quixotic)
-              </a>
-            </h3>
           </div>
-
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0x22Cd0e2680f4B9aE140E3b9AbFA3463532e290Ff", 1, {
-                  value: price.mul(2),
-                }),
-              );
-              changeELBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 1
-          </Button>
-
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0x22Cd0e2680f4B9aE140E3b9AbFA3463532e290Ff", 2, {
-                  value: price.mul(3),
-                }),
-              );
-              changeELBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 2
-          </Button>
-
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0x22Cd0e2680f4B9aE140E3b9AbFA3463532e290Ff", 3, {
-                  value: price.mul(4),
-                }),
-              );
-              changeELBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 3
-          </Button>
-
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0x22Cd0e2680f4B9aE140E3b9AbFA3463532e290Ff", 5, {
-                  value: price.mul(6),
-                }),
-              );
-              changeELBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 5
-          </Button>
-
-          <Button
-            onClick={async () => {
-              let price = ethers.utils.parseEther("0.00042");
-              console.log("price", price);
-              let result = await tx(
-                writeContracts.YourContract.mint("0x22Cd0e2680f4B9aE140E3b9AbFA3463532e290Ff", 10, {
-                  value: price.mul(11),
-                }),
-              );
-              changeELBPageNumber(1);
-              console.log("result", result);
-            }}
-          >
-            Mint 10
-          </Button>
           {usersELBNFTsElement}
-          {!elbData && (
-            <div style={{ marginTop: "4rem" }}>
-              <Spin size="large" />
+          {userSigner ? (
+            !elbData && (
+              <div style={{ marginTop: "4rem" }}>
+                <Spin size="large" />
+              </div>
+            )
+          ) : (
+            <div>
+              <Typography.Title level={5}>Please Connect to wallet to view Owned NFts</Typography.Title>
             </div>
           )}
-        </Route>
-        <Route exact path="/debug">
-          {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-
-          <Contract
-            name="YourContract"
-            price={price}
-            signer={userSigner}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-          />
-        </Route>
-        <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        </Route>
-        <Route path="/exampleui">
-          <ExampleUI
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            yourLocalBalance={yourLocalBalance}
-            price={price}
-            tx={tx}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            purpose={purpose}
-          />
-        </Route>
-        <Route path="/mainnetdai">
-          <Contract
-            name="DAI"
-            customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-            signer={userSigner}
-            provider={mainnetProvider}
-            address={address}
-            blockExplorer="https://etherscan.io/"
-            contractConfig={contractConfig}
-            chainId={1}
-          />
-          {/*
-            <Contract
-              name="UNI"
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.UNI}
-              signer={userSigner}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer="https://etherscan.io/"
-            />
-            */}
-        </Route>
-        <Route path="/subgraph">
-          <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-          />
         </Route>
       </Switch>
 
@@ -670,19 +558,6 @@ function App(props) {
               </span>
               Support
             </Button>
-          </Col>
-        </Row>
-
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={24}>
-            {
-              /*  if the local provider has a signer, let's show the faucet:  */
-              faucetAvailable ? (
-                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
-              ) : (
-                ""
-              )
-            }
           </Col>
         </Row>
       </div>

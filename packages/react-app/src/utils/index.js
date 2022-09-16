@@ -9,9 +9,10 @@ const alchemy = new Alchemy(settings);
 
 export const CLB_COLLECTION_ADDRESS = "0xfb3999711d4f309F6B71504268F79b3fD578DA6F";
 export const ELB_COLLECTION_ADDRESS = "0x22Cd0e2680f4B9aE140E3b9AbFA3463532e290Ff";
+export const MLB_COLLECTION_ADDRESS = "0x63D29F9c28Ce781DacB284A99b1239A25E3e2159";
 
 // --------------------------------------------------
-// Function to fetch LWD Nfts
+// Function to fetch CLB NFTs
 // --------------------------------------------------
 export const fetchCLBNFTs = async (
   address = "0xc57c5aE582708e619Ec1BA7513480b2e7540935f",
@@ -57,7 +58,7 @@ export const fetchCLBNFTs = async (
 };
 
 // --------------------------------------------------
-// Function to fetch BuildSpace NFTs
+// Function to fetch ELB NFTs
 // --------------------------------------------------
 export const fetchELBNFTs = async (
   address = "0xc57c5aE582708e619Ec1BA7513480b2e7540935f",
@@ -98,4 +99,48 @@ export const fetchELBNFTs = async (
   elbNFTData.total = nftsForOwner.totalCount;
 
   return elbNFTData;
+};
+
+// --------------------------------------------------
+// Function to fetch MLB NFTs
+// --------------------------------------------------
+export const fetchMLBNFTs = async (
+  address = "0xc57c5aE582708e619Ec1BA7513480b2e7540935f",
+  pageKey = "",
+  pageLimit = 10,
+) => {
+  const nftsForOwner = await alchemy.nft.getNftsForOwner(address, {
+    pageKey: pageKey,
+    pageSize: pageLimit,
+    contractAddresses: [MLB_COLLECTION_ADDRESS],
+  });
+
+  console.log(`fdaljf;sldjkf`, nftsForOwner);
+
+  const mlbTokenIdsMinted = [];
+  for (const nft of nftsForOwner.ownedNfts) {
+    if (MLB_COLLECTION_ADDRESS.toLowerCase() === nft.contract.address.toLowerCase()) {
+      mlbTokenIdsMinted.push(nft.tokenId);
+    }
+  }
+
+  const mlbNFTData = await Promise.all(
+    mlbTokenIdsMinted.map(async tokenId => {
+      const nftMetadata = await alchemy.nft.getNftMetadata(MLB_COLLECTION_ADDRESS, tokenId);
+
+      console.log(nftMetadata);
+      return {
+        name: nftMetadata.title,
+        image: nftMetadata.media[0].gateway,
+        description: nftMetadata.description,
+        owner: address,
+        tokenId: nftMetadata.tokenId,
+      };
+    }),
+  );
+
+  mlbNFTData.pageKey = nftsForOwner.pageKey;
+  mlbNFTData.total = nftsForOwner.totalCount;
+
+  return mlbNFTData;
 };
