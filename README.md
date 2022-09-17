@@ -2,6 +2,8 @@
 
 You view all your Execution Layer Bears and Consensys Layers Bears minted. Its ues [alchemy-sdk](https://www.alchemy.com/sdk) to fetch the owned bears and pagination is also implemented 🤩.
 
+Check out https://bears-dev.surge.sh/
+
 ![Image](https://user-images.githubusercontent.com/80153681/190860126-4e95eb3b-02a0-44cd-8a70-5590be51143e.jpg)
 ![Image](https://user-images.githubusercontent.com/80153681/190860127-68e209eb-765d-4b80-a17e-c9f20a9b607d.jpg)
 
