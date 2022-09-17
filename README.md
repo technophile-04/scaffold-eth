@@ -1,11 +1,14 @@
-# 🏗 Scaffold-ETH - 🐼 merge bear minter 🐻👉 👈🐻‍❄️
+# 🏗 Scaffold-ETH - 🐼 merge bear minter 🐻👉 👈🐻‍❄(This branced from this [repo](https://github.com/scaffold-eth/scaffold-eth/tree/merge-bears-minter) )
 
+You view all your Execution Layer Bears and Consensys Layers Bears minted. Its ues [alchemy-sdk](https://www.alchemy.com/sdk) to fetch the owned bears and pagination is also implemented 🤩.
 
-![image](https://user-images.githubusercontent.com/2653167/190269936-f3d9a2bd-969d-4429-92e3-38aee464e5e8.png)
+![Image](https://user-images.githubusercontent.com/80153681/190860126-4e95eb3b-02a0-44cd-8a70-5590be51143e.jpg)
+![Image](https://user-images.githubusercontent.com/80153681/190860127-68e209eb-765d-4b80-a17e-c9f20a9b607d.jpg)
+
 
 
 ```bash
-git clone -b merge-bears-minter https://github.com/scaffold-eth/scaffold-eth.git merge-bears-minter
+git clone -b merge-bears-minter https://github.com/technophile-04/scaffold-eth.git merge-bears-minter
 ```
 
 > install
@@ -20,7 +23,4 @@ yarn install
 ```bash
 yarn start
 ```
-
-🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
-
-📝 Edit your frontend `App.jsx` in `packages/react-app/src`
+For fetching logic and use of alchemy-sdk checkout [`packages/react-app/src/utils/index.js`](https://github.com/technophile-04/scaffold-eth/blob/merge-bears-minter/packages/react-app/src/utils/index.js)
