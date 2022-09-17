@@ -1,17 +1,18 @@
-# 🏗 Scaffold-ETH - 🐼 merge bear minter 🐻👉 👈🐻‍❄️
+# 🏗 Scaffold-ETH - 🐼 merge bear minter 🐻👉 👈🐻‍❄️ (This is branched from this [repo](https://github.com/technophile-04/scaffold-eth/tree/merge-bears-minter) )
 
+You can now view all your bears and mint them on single scaffold-eth 🏗 page without switching tabs 💪. Its ues [alchemy-sdk](https://www.alchemy.com/sdk) to fetch the owned bears and pagination is also implemented 🤩. 
 
-![image](https://user-images.githubusercontent.com/2653167/190269936-f3d9a2bd-969d-4429-92e3-38aee464e5e8.png)
+![image](https://user-images.githubusercontent.com/80153681/190859701-cc1eea0b-6639-4213-8289-ab6f040fe031.jpg)
 
 
 ```bash
-git clone -b merge-bears-minter https://github.com/scaffold-eth/scaffold-eth.git merge-bears-minter
+git clone -b mb-minter https://github.com/technophile-04/scaffold-eth.git mb-minter
 ```
 
 > install
 
 ```bash
-cd merge-bears-minter
+cd mb-minter
 yarn install
 ```
 
