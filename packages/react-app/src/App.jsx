@@ -280,7 +280,7 @@ function App(props) {
     <NFTsMinted data={clbData} setPageNumber={changeCLBPageNumber} pageNumber={clbPageNumber} loading={clbLoading} />
   );
 
-  const usersMLBNFTsElement = clbData && (
+  const usersMLBNFTsElement = mlbData && (
     <NFTsMinted data={mlbData} setPageNumber={changeMLBPageNumber} pageNumber={mlbPageNumber} loading={clbLoading} />
   );
 
@@ -290,14 +290,17 @@ function App(props) {
         setClbLoading(true);
         console.log("currentCLBPageToken:", currentCLBPageToken);
         let clbDataRes = await fetchCLBNFTs(address, currentCLBPageToken, 6);
-        console.log("pageKey", clbDataRes.pageKey);
-        updateCLBNextPageToken(clbDataRes.pageKey);
-        setClbData(clbDataRes);
-        if (clbDataRes[0]) {
-          setClbSelectedTokenId(clbDataRes[0].tokenId);
+        if (clbDataRes) {
+          console.log("pageKey", clbDataRes.pageKey);
+          updateCLBNextPageToken(clbDataRes.pageKey);
+          setClbData(clbDataRes);
+          if (clbDataRes[0] && clbDataRes[0].tokenId) {
+            setClbSelectedTokenId(clbDataRes[0].tokenId);
+          }
+          console.log("called me");
+          console.log(`CLB DATA`, clbDataRes);
         }
-        console.log("called me");
-        console.log(`CLB DATA`, clbDataRes);
+
         setClbLoading(false);
       })();
     }
@@ -309,14 +312,17 @@ function App(props) {
         setElbLoading(true);
         console.log("currentELBPageToken:", currentELBPageToken);
         let elbDataRes = await fetchELBNFTs(address, currentELBPageToken, 6);
-        console.log("pageKey", elbDataRes.pageKey);
-        updateELBNextPageToken(elbDataRes.pageKey);
-        setElbData(elbDataRes);
-        if (elbDataRes[0]) {
-          setElbSelectedTokenId(elbDataRes[0].tokenId);
+        if (elbDataRes) {
+          console.log("pageKey", elbDataRes.pageKey);
+          updateELBNextPageToken(elbDataRes.pageKey);
+          setElbData(elbDataRes);
+          if (elbDataRes[0] && elbDataRes[0].tokenId) {
+            setElbSelectedTokenId(elbDataRes[0].tokenId);
+          }
+          console.log("called me");
+          console.log(`ELB DATA`, elbDataRes);
         }
-        console.log("called me");
-        console.log(`ELB DATA`, elbDataRes);
+
         setElbLoading(false);
       })();
     }
@@ -491,7 +497,9 @@ function App(props) {
               )
             ) : (
               <div>
-                <Typography.Title level={5}>Please Connect to wallet to view Owned NFts</Typography.Title>
+                <Typography.Title level={5} style={{ marginTop: "1rem" }}>
+                  Please Connect to wallet to mint and view owned NFTs
+                </Typography.Title>
               </div>
             )}
             <hr style={{ margin: 64 }} />
