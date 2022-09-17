@@ -11,7 +11,7 @@ export const CLB_COLLECTION_ADDRESS = "0xfb3999711d4f309F6B71504268F79b3fD578DA6
 export const ELB_COLLECTION_ADDRESS = "0x22Cd0e2680f4B9aE140E3b9AbFA3463532e290Ff";
 
 // --------------------------------------------------
-// Function to fetch LWD Nfts
+// Function to fetch CLB Nfts
 // --------------------------------------------------
 export const fetchCLBNFTs = async (
   address = "0xc57c5aE582708e619Ec1BA7513480b2e7540935f",
@@ -57,7 +57,7 @@ export const fetchCLBNFTs = async (
 };
 
 // --------------------------------------------------
-// Function to fetch BuildSpace NFTs
+// Function to fetch ELB NFTs
 // --------------------------------------------------
 export const fetchELBNFTs = async (
   address = "0xc57c5aE582708e619Ec1BA7513480b2e7540935f",
