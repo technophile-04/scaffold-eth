@@ -1,4 +1,4 @@
-import { Button, Col, Menu, Row } from "antd";
+import { Button, Col, Menu, notification, Row } from "antd";
 
 import "antd/dist/antd.css";
 import {
@@ -54,7 +54,7 @@ const { ethers } = require("ethers");
 */
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const initialNetwork = NETWORKS.goerli; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -95,6 +95,9 @@ function App(props) {
 
   // Sensible pollTimes depending on the provider you are using
   const localProviderPollingTime = getRPCPollTime(localProvider);
+
+  console.log("Local Provider poll time", localProviderPollingTime);
+
   const mainnetProviderPollingTime = getRPCPollTime(mainnetProvider);
 
   if (DEBUG) console.log(`Using ${selectedNetwork} network`);
@@ -224,6 +227,16 @@ function App(props) {
     myMainnetDAIBalance,
   ]);
 
+  /* useEffect(() => {
+    if (localProvider && localProvider?._network?.chainId !== 31337) {
+      notification.info({
+        message: "Looks like you are not on local chain!",
+        description: "Make sure you checkout RPC_POLL_TIME in constant.js",
+        placement: "topRight",
+      });
+    }
+  }, [localProvider]); */
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new ethers.providers.Web3Provider(provider));
@@ -300,12 +313,6 @@ function App(props) {
         <Menu.Item key="/">
           <Link to="/">App Home</Link>
         </Menu.Item>
-        <Menu.Item key="/debug">
-          <Link to="/debug">Debug Contracts</Link>
-        </Menu.Item>
-        <Menu.Item key="/hints">
-          <Link to="/hints">Hints</Link>
-        </Menu.Item>
         <Menu.Item key="/exampleui">
           <Link to="/exampleui">ExampleUI</Link>
         </Menu.Item>
@@ -329,7 +336,7 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
 
-          <Contract
+          {/* <Contract
             name="YourContract"
             price={price}
             signer={userSigner}
@@ -337,7 +344,7 @@ function App(props) {
             address={address}
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
-          />
+          /> */}
         </Route>
         <Route path="/hints">
           <Hints
