@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useBalance } from "eth-hooks";
+// import { useBalance } from "eth-hooks";
 import { getRPCPollTime } from "../helpers";
+import { useBalance } from "../hooks/useBalance";
 
 const { utils } = require("ethers");
 

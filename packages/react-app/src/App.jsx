@@ -2,7 +2,6 @@ import { Button, Col, Menu, Row } from "antd";
 
 import "antd/dist/antd.css";
 import {
-  useBalance,
   useContractLoader,
   useContractReader,
   useGasPrice,
@@ -32,6 +31,7 @@ import deployedContracts from "./contracts/hardhat_contracts.json";
 import { getRPCPollTime, Transactor, Web3ModalSetup } from "./helpers";
 import { Home, ExampleUI, Hints, Subgraph } from "./views";
 import { useStaticJsonRPC } from "./hooks";
+import { useBalance } from "./hooks/useBalance";
 
 const { ethers } = require("ethers");
 /*
@@ -54,7 +54,7 @@ const { ethers } = require("ethers");
 */
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const initialNetwork = NETWORKS.goerli; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -68,7 +68,7 @@ const web3Modal = Web3ModalSetup();
 const providers = [
   "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
   `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
-  "https://rpc.scaffoldeth.io:48544",
+  // "https://rpc.scaffoldeth.io:48544",
 ];
 
 function App(props) {
@@ -300,9 +300,9 @@ function App(props) {
         <Menu.Item key="/">
           <Link to="/">App Home</Link>
         </Menu.Item>
-        <Menu.Item key="/debug">
+        {/* <Menu.Item key="/debug">
           <Link to="/debug">Debug Contracts</Link>
-        </Menu.Item>
+        </Menu.Item> */}
         <Menu.Item key="/hints">
           <Link to="/hints">Hints</Link>
         </Menu.Item>
@@ -329,7 +329,7 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
 
-          <Contract
+          {/* <Contract
             name="YourContract"
             price={price}
             signer={userSigner}
@@ -337,7 +337,7 @@ function App(props) {
             address={address}
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
-          />
+          /> */}
         </Route>
         <Route path="/hints">
           <Hints
