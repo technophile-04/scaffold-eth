@@ -2,7 +2,6 @@ import { Button, Col, Menu, Row } from "antd";
 
 import "antd/dist/antd.css";
 import {
-  useBalance,
   useContractLoader,
   useContractReader,
   useGasPrice,
@@ -32,7 +31,7 @@ import deployedContracts from "./contracts/hardhat_contracts.json";
 import { getRPCPollTime, Transactor, Web3ModalSetup } from "./helpers";
 import { Home, ExampleUI, Hints, Subgraph } from "./views";
 import { useStaticJsonRPC } from "./hooks";
-
+import { useBalance } from "./hooks/useBalance";
 const { ethers } = require("ethers");
 /*
     Welcome to 🏗 scaffold-eth !

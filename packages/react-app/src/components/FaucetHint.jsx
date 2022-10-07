@@ -1,9 +1,10 @@
 import { Button } from "antd";
 import React, { useState } from "react";
 import { ethers } from "ethers";
-import { useBalance, useGasPrice } from "eth-hooks";
+import { useGasPrice } from "eth-hooks";
 
 import { getRPCPollTime, Transactor } from "../helpers";
+import { useBalance } from "../hooks/useBalance";
 
 function FaucetHint({ localProvider, targetNetwork, address }) {
   const [faucetClicked, setFaucetClicked] = useState(false);
