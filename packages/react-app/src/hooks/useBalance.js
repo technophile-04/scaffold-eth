@@ -32,6 +32,7 @@ export const useOnRepetition = (callback, options, ...args) => {
   const leadingCall = useRef(true);
   // created a strigified args to use for deps
   const argDeps = JSON.stringify(args !== null && args !== void 0 ? args : []);
+  const argsDepsPrimitives = args?.filter(arg => arg !== Object(arg));
 
   // save the input function provided
   const callFunctionWithArgs = useCallback(() => {
@@ -100,10 +101,10 @@ export const useOnRepetition = (callback, options, ...args) => {
   }, [options.leadingTrigger, callFunctionWithArgs]);
 
   useEffect(() => {
-    console.log(`newUseEffect trigger !!!!`);
+    // console.log(`newUseEffect trigger !!!!`);
     if (options.leadingTrigger && callFunctionWithArgs != null) {
-      console.log(`newUseEffect call !!!!`, argDeps);
+      console.log(`newUseEffect call !!!!`, JSON.stringify(argsDepsPrimitives));
       callFunctionWithArgs();
     }
-  }, [argDeps, options.leadingTrigger]);
+  }, [JSON.stringify(argsDepsPrimitives), options.leadingTrigger]);
 };

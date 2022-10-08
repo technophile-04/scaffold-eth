@@ -1,4 +1,5 @@
-import { useContractReader } from "eth-hooks";
+import { useContractReader } from "../hooks";
+// import { useContractReader } from "eth-hooks";
 import { ethers } from "ethers";
 import React from "react";
 import { Link } from "react-router-dom";
