@@ -32,7 +32,8 @@ export const useOnRepetition = (callback, options, ...args) => {
   const leadingCall = useRef(true);
   // created a strigified args to use for deps
   const argDeps = JSON.stringify(args !== null && args !== void 0 ? args : []);
-  const argsDepsPrimitives = args?.filter(arg => arg !== Object(arg));
+
+  const argsPrimitivesValuesDeps = JSON.stringify(args?.filter(arg => arg !== Object(arg)));
 
   // save the input function provided
   const callFunctionWithArgs = useCallback(() => {
@@ -100,11 +101,12 @@ export const useOnRepetition = (callback, options, ...args) => {
     }
   }, [options.leadingTrigger, callFunctionWithArgs]);
 
+  // call if the primitive value in args changes
   useEffect(() => {
-    // console.log(`newUseEffect trigger !!!!`);
     if (options.leadingTrigger && callFunctionWithArgs != null) {
-      console.log(`newUseEffect call !!!!`, JSON.stringify(argsDepsPrimitives));
+      console.log(`newUseEffect call !!!!`, JSON.stringify(argsPrimitivesValuesDeps));
       callFunctionWithArgs();
     }
-  }, [JSON.stringify(argsDepsPrimitives), options.leadingTrigger]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [argsPrimitivesValuesDeps, options.leadingTrigger]);
 };
