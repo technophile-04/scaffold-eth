@@ -2,6 +2,7 @@ import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switc
 import React, { useState } from "react";
 import { utils } from "ethers";
 import { SyncOutlined } from "@ant-design/icons";
+import { ethers } from "ethers";
 
 import { Address, Balance, Events } from "../components";
 
@@ -17,13 +18,40 @@ export default function ExampleUI({
   writeContracts,
 }) {
   const [newPurpose, setNewPurpose] = useState("loading...");
+  const [returnFirstArray, setReturnFirstArray] = useState([]);
 
   return (
     <div>
       {/*
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
+
       <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
+        {/* ---------------------------------------------------Changes  */}
+        <Button
+          style={{ marginTop: 8 }}
+          onClick={async () => {
+            /* look how you call setPurpose on your contract: */
+            /* notice how you pass a call back for tx updates too */
+            const result = await tx(
+              writeContracts.YourContract.returnFirst({ value: ethers.utils.parseEther("0.001") }),
+            );
+            // console.log("awaiting metamask/web3 confirm result...", result);
+            const txnResponse = await result.wait();
+            console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀Txn Response is : `, txnResponse);
+            console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀The value of array is : `, txnResponse.events[0]?.args.array);
+            setReturnFirstArray(txnResponse.events[0]?.args.array);
+          }}
+        >
+          REturn FRIST
+        </Button>
+        <div>
+          <h1>The return first values are : </h1>
+          {returnFirstArray.map(item => (
+            <p style={{ fontSize: "1rem" }}>{item}</p>
+          ))}
+        </div>
+        {/* ----------------------------------------- */}
         <h2>Example UI:</h2>
         <h4>purpose: {purpose}</h4>
         <Divider />
